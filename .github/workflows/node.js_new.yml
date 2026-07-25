@@ -15,10 +15,11 @@ jobs:
     runs-on: ubuntu-latest
     env:
       ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: true
+      NODE_OPTIONS: --openssl-legacy-provider
 
     strategy:
       matrix:
-        node-version: [24.x]
+        node-version: [20.x]
         # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
 
     steps:
@@ -26,8 +27,6 @@ jobs:
     - run: ls -lrt $GITHUB_WORKSPACE
     - name: Use Node.js ${{ matrix.node-version }}
       uses: actions/setup-node@v4
-      env:
-        NODE_OPTIONS: --openssl-legacy-provider
       with:
         node-version: ${{ matrix.node-version }}
         cache: 'npm'
