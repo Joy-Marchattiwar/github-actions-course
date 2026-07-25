@@ -26,6 +26,8 @@ jobs:
     - run: ls -lrt $GITHUB_WORKSPACE
     - name: Use Node.js ${{ matrix.node-version }}
       uses: actions/setup-node@v4
+      env:
+        NODE_OPTIONS: --openssl-legacy-provider
       with:
         node-version: ${{ matrix.node-version }}
         cache: 'npm'
