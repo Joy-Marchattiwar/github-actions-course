@@ -23,8 +23,8 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
-    - run: ls -lrt /home/runner/work/github-actions-course
-    - run: ls -lrt /home/runner/work/github-actions-course/github-actions-course
+    - run: ls -lrt $GITHUB_WORKSPACE
+    - run: ls -lrt $GITHUB_WORKSPACE/github-actions-course
     - name: Use Node.js ${{ matrix.node-version }}
       uses: actions/setup-node@v4
       with:
