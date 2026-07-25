@@ -1,15 +1,72 @@
-name: Team Approval workflow
-on: pull_request_review
+name: Label PR when approved
+
+on:
+  pull_request_review:
+    types: [submitted]
+
+permissions:
+  pull-requests: write
+  contents: read
 
 jobs:
-  labelWhenAprroved:
+  label-when-approved:
+    if: github.event.review.state == 'approved'
     runs-on: ubuntu-latest
+
     steps:
-    - name: Label when approved
-      uses: pullreminders/label-when-approved-action@master
-      env:
-        APRROVALS: "1"
-        GITHUb_TOKENS: ${{ secrets.GITHUB_TOKEN}}
-        ADD_LABEL: "approved"
-        REMOVE_LABEL: "awaiting%20review"
-  
+      - name: Add/Remove labels based on approvals
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const pull_number = context.payload.pull_request.number;
+
+            // Fetch all reviews
+            const reviews = await github.paginate(
+              github.rest.pulls.listReviews,
+              {
+                owner,
+                repo,
+                pull_number
+              }
+            );
+
+            // Count latest review from each user
+            const latestReviews = new Map();
+
+            for (const review of reviews) {
+              latestReviews.set(review.user.login, review.state);
+            }
+
+            const approvals = [...latestReviews.values()]
+              .filter(state => state === "APPROVED")
+              .length;
+
+            console.log(`Approvals: ${approvals}`);
+
+            if (approvals >= 1) {
+
+              // Add "approved" label
+              await github.rest.issues.addLabels({
+                owner,
+                repo,
+                issue_number: pull_number,
+                labels: ["approved"]
+              });
+
+              // Remove "awaiting review" label
+              try {
+                await github.rest.issues.removeLabel({
+                  owner,
+                  repo,
+                  issue_number: pull_number,
+                  name: "awaiting review"
+                });
+              } catch (err) {
+                console.log("Label 'awaiting review' not found.");
+              }
+
+              console.log("Labels updated successfully.");
+            }
