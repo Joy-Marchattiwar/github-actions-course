@@ -48,6 +48,11 @@ jobs:
         node-version: ${{ matrix.node-version }}
         cache: 'npm'
         
+    - uses: actions/download-artifact@master
+      with:
+          name: webpack artifacts
+          path: public/
+          
     - name: NPM install and test
       run: |
         npm install
